@@ -7,27 +7,25 @@ import os
 import glob
 from bs4 import BeautifulSoup
 
+
+CHANNEL_ID = # Insert channel ID
+
 load_dotenv(".env")
 
 Last = None
 Current = None
 
 activity = discord.Activity(type=discord.ActivityType.watching, name="https://x265.club/")
-bot = commands.Bot(command_prefix=">>", case_insensitive=True, activity=activity)
+bot = commands.Bot(activity=activity)
 
 @bot.event
 async def on_ready():
     print(f'Logged in as: {bot.user.name}')
     print(f'With ID: {bot.user.id}')
 
-@bot.command()
-async def test(ctx, arg):
-    await ctx.send(f"Hello {arg}")
-
 @tasks.loop(seconds=60)
 async def top():
-    channels_to_send = 883082646383640626
-    channel0 = bot.get_channel(channels_to_send) # Our Home
+    channel0 = bot.get_channel(CHANNEL_ID)
     URL = "https://x265.club/feed"
     feed = feedparser.parse(URL)
 
