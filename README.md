@@ -24,5 +24,5 @@ $ python3 main.py
 If you are on Windows use `py` instead of `python3` and `pip` instead of `pip3` and it should work.
 
 ### TO DO
-- [] Add multiple channel support
-- [] Somehow get over the cloudflare stuff
+- [ ] Add multiple channel support
+- [ ] Somehow get over the cloudflare stuff
