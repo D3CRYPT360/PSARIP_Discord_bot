@@ -16,7 +16,7 @@ Last = None
 Current = None
 
 activity = discord.Activity(type=discord.ActivityType.watching, name="https://x265.club/")
-bot = commands.Bot(activity=activity)
+bot = commands.Bot(command_prefix="", activity=activity)
 
 @bot.event
 async def on_ready():
