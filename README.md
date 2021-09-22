@@ -12,7 +12,7 @@
 
 > You could and I highly request you create a virtual environment to run the script and install the dependencies.
  ```cli
-$ git clone https://github.com/D3CRYPT360/psarip
+$ git clone https://github.com/D3CRYPT360/PSARIP_Discord_bot
 ```
 ```cli
 $ pip3 install -r requirements.txt
