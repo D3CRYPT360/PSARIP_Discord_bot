@@ -17,7 +17,7 @@ Current = None
 
 activity = discord.Activity(
     type=discord.ActivityType.watching,
-    name="https://x265.club/")
+    name="https://psarips.top/")
 bot = commands.Bot(command_prefix="=", activity=activity)
 
 
@@ -45,7 +45,7 @@ async def channel_sender(TITLE, LINK, NAME, CHANNEL_ID):
 
 @tasks.loop(seconds=60)
 async def top():
-    URL = "https://x265.club/feed"
+    URL = "https://psarips.top/feed"
     feed = feedparser.parse(URL)
 
     DESC = feed.entries[0].summary_detail.value
