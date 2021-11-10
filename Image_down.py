@@ -12,9 +12,3 @@ async def Img_Downloader(IMAGE, NAME):
             await rss_files.write(await resp.read())
             await rss_files.close()
             print("Image has been downloaded")
-
-
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(Img_Downloader("https://x265.club/wp-content/uploads/2020/08/lower-decks.jpg", "lower-decks.jpg"))
