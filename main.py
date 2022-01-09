@@ -1,86 +1,94 @@
-import discord
-from discord.ext import commands, tasks
-from Image_down import Img_Downloader
-from dotenv import load_dotenv
-import feedparser
-import os
+"""
+A Discord bot which sends a message to a channel whenever a new movie/series episode is released on PSArips
+"""
+import ast
 import glob
+import logging
+import os
+
+import discord
+import feedparser
 from bs4 import BeautifulSoup
+from discord.ext import commands, tasks
+from dotenv import load_dotenv
+from img_download import download_img
 
-
-CHANNEL_ID = []
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 load_dotenv(".env")
 
-Last = None
-Current = None
+CHANNEL_ID = ast.literal_eval(os.getenv("CHANNELS"))
 
-activity = discord.Activity(
-    type=discord.ActivityType.watching,
-    name="https://psarips.top/")
+CURRENT = None
+LAST = None
+
+activity = discord.Activity(type=discord.ActivityType.watching, name="https://psa.pm/")
 bot = commands.Bot(command_prefix="=", activity=activity)
 
 
 @bot.event
 async def on_ready():
-    print(f'Logged in as: {bot.user.name}')
-    print(f'With ID: {bot.user.id}')
+    """Discord bot starting event"""
+    logging.info("=== BOT HAS STARTED ===")
+    logging.info("User ID: %s", bot.user.id)
+    logging.info("=======================")
 
 
-async def channel_sender(TITLE, LINK, NAME, CHANNEL_ID):
-    channel_to_send = bot.get_channel(CHANNEL_ID)
+async def channel_sender(title, link, name, channel_id):
+    """Sends new content with required formatting."""
+    channel_to_send = bot.get_channel(channel_id)
     embed = discord.Embed(
         colour=discord.Color.random(),
-        title=TITLE,
+        title=title,
         # Getting the text in the P tag in the description
-        description=f"[LINK]({LINK})\n{soup.p.text}"
+        description=f"[LINK]({link})\n{soup.p.text}",
     )
 
-    # For some weird reason discord won't put image directly on the embed from the link provided.
+    # For some weird reason Discord won't put image directly on the embed from the link provided.
     # Have to download it locally and upload it.
-    file = discord.File(f"./images/{NAME}", filename="image.png")
+    file = discord.File(f"./images/{name}", filename="image.png")
     embed.set_image(url="attachment://image.png")
     await channel_to_send.send(file=file, embed=embed)
 
 
 @tasks.loop(seconds=60)
 async def top():
-    URL = "https://psarips.top/feed"
-    feed = feedparser.parse(URL)
+    """Main bot event"""
+    feed = feedparser.parse("https://psa.pm/feed")
 
-    DESC = feed.entries[0].summary_detail.value
-    TITLE = feed.entries[0].title
-    LINK = feed.entries[0].link
+    desc = feed.entries[0].summary_detail.value
+    title = feed.entries[0].title
+    url = feed.entries[0].link
 
     # Parsing HTML to get the image link because the description is in HTML
-    # format
     global soup
-    soup = BeautifulSoup(DESC, 'lxml')
-    image = soup.find('img')
-    IMAGE = image.get("src")
-    NAME = IMAGE.split("/")[7]
+    soup = BeautifulSoup(desc, "lxml")
+    img = soup.find("img").get("src")
+    name = img.split("/")[7]
 
-    global Current
-    global Last
-    Current = TITLE
-    if Current != Last:
-        Last = Current
-        await Img_Downloader(IMAGE, NAME)
+    global CURRENT
+    global LAST
+    CURRENT = title
+    if CURRENT != LAST:
+        LAST = CURRENT
+        await download_img(img, name)
 
         if len(CHANNEL_ID) > 1:
             for channel in CHANNEL_ID:
-                await channel_sender(TITLE, LINK, NAME, channel)
+                await channel_sender(title, url, name, channel)
         else:
-            await channel_sender(TITLE, LINK, NAME, CHANNEL_ID[0])
+            await channel_sender(title, url, name, CHANNEL_ID[0])
 
-        files = glob.glob("./images/*")
-        for f in files:
-            os.remove(f)
+        for file in glob.glob("./images/*"):
+            os.remove(file)
 
 
 @top.before_loop
 async def wait_for_bot():
+    """Starting main bot loop AFTER bot is logged in"""
     await bot.wait_until_ready()
+
 
 top.start()
 bot.run(os.getenv("BOT_TOKEN"))
